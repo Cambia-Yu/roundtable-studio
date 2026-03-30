@@ -53,22 +53,16 @@ async function openaiComplete(apiKey, model, topic, baseUrl) {
   if (baseUrl) {
     endpoint = baseUrl.endsWith('/chat/completions') ? baseUrl : baseUrl.replace(/\/+$/, '') + '/chat/completions';
   }
-  // 智谱 AI 兼容模式
-  const isZhipuModel = model?.startsWith('glm-');
+  // 注意：Netlify Functions 免费版超时 10s，不能开启 thinking 模式
   const bodyPayload = {
     model: model || 'gpt-4o-mini',
     temperature: 0.75,
+    max_tokens: 4096,
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: '议题：' + topic },
     ],
   };
-  if (isZhipuModel) {
-    bodyPayload.thinking = { type: 'enabled' };
-    bodyPayload.max_tokens = 65536;
-  } else {
-    bodyPayload.response_format = { type: 'json_object' };
-  }
 
   const r = await fetch(endpoint, {
     method: 'POST',
@@ -136,6 +130,7 @@ async function anthropicComplete(apiKey, model, topic, baseUrl) {
 }
 
 // 使用 CJS exports（Netlify 默认 CJS 模式）
+// Netlify Functions 免费版超时 10s，付费版 26s
 exports.handler = async function(event, context) {
   // CORS headers
   const headers = {
