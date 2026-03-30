@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+  <title>圆桌 · Roundtable Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true"></div>
+          <div class="brand-copy">
+            <span class="brand-kicker">Roundtable</span>
+            <strong>多人求真圆桌</strong>
+          </div>
+        </div>
+        <button class="icon-btn close-sidebar-btn" id="btnCloseSidebar" aria-label="关闭侧边栏">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6L6 18"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="sidebar-actions">
+        <button class="btn btn-outline new-chat-btn" id="btnNewChat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M12 5v14M5 12h14"></path>
+          </svg>
+          新建议题
+        </button>
+      </div>
+
+      <div class="sidebar-section-label">最近推演</div>
+      <div class="history-list" id="historyList"></div>
+
+      <!-- 历史记录菜单 -->
+      <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" data-action="rename">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          重命名
+        </div>
+        <div class="context-menu-item" data-action="categorize">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+          </svg>
+          添加分类
+        </div>
+        <div class="context-menu-item" data-action="delete" class="danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          删除
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button type="button" class="btn btn-ghost settings-btn" id="btnSettings">
+          <span id="keyStatusDot" class="status-dot ok" aria-hidden="true"></span>
+          <span>API 连接设置</span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="mobile-overlay" id="sidebarOverlay"></div>
+
+    <main class="chat-area">
+      <header class="chat-header">
+        <div class="header-left">
+          <button class="icon-btn" id="btnOpenSidebar" aria-label="打开侧边栏">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <path d="M4 7h16M4 12h16M4 17h16"></path>
+            </svg>
+          </button>
+
+          <div class="topic-title">
+            <span class="badge" id="topicBadge">Idle</span>
+            <div class="topic-copy">
+              <span class="topic-eyebrow">Roundtable Studio</span>
+              <span id="topicLine">等待新的议题输入</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button class="icon-btn" id="btnToggleTools" aria-label="切换工具面板" title="打开分析面板">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <path d="M4 5h16M4 12h16M4 19h16"></path>
+              <path d="M14 4v16"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="chat-scroll" id="chatScroll">
+        <section class="welcome-screen" id="welcomeScreen">
+          <div class="welcome-eyebrow">Roundtable Studio</div>
+          <h1>把复杂问题摆上桌面。</h1>
+          <p>输入一个有争议的主题，系统会组织多角色发言、沉淀观点时间线，并同步构建右侧拓扑视图。</p>
+          <div class="welcome-actions">
+            <button class="btn btn-outline" id="btnDemo">运行示例推演</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="chat-input-wrapper">
+        <div class="chat-input-shell">
+          <div class="chat-input-box">
+            <textarea id="topicInput" rows="1" placeholder="输入一个值得辩论的议题..." autocomplete="off" spellcheck="false"></textarea>
+            <button type="button" class="send-btn" id="btnGenerate" aria-label="发送">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 2L11 13"></path>
+                <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="chat-footer-hint">
+            <span>AI 生成内容可能包含偏差，请自行校验。</span>
+            <span>Enter 发送，Shift + Enter 换行</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="tools-panel" id="toolsPanel">
+      <div class="tools-header">
+        <div class="tabs">
+          <button class="tab active" data-target="col-stage">舞台阵列</button>
+          <button class="tab" data-target="col-flow">思维拓扑</button>
+        </div>
+        <button class="icon-btn tools-close-btn" id="btnCloseTools" aria-label="关闭工具面板">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6L6 18"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="tools-content">
+        <section class="col-stage active">
+          <div class="stage-shell">
+            <div class="stage-ring-wrap">
+              <div class="stage-ring-outer" aria-hidden="true"></div>
+              <div class="stage-ring" id="stageRing">
+                <div class="stage-grid" aria-hidden="true"></div>
+                <div class="moderator-hub">
+                  <span class="mod-inner">主持</span>
+                  <span class="mod-sub">Anchor</span>
+                </div>
+              </div>
+            </div>
+            <div class="stage-caption-box">
+              <p class="stage-caption">舞台阵列待命中</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="col-flow">
+          <div class="flow-toolbar">
+            <div class="flow-title-block">
+              <span class="flow-dot" aria-hidden="true"></span>
+              <div class="flow-copy">
+                <strong>Topology Map</strong>
+                <span>观点结构路径</span>
+              </div>
+            </div>
+            <div class="tool-actions">
+              <button type="button" class="btn btn-tool" id="btnDownload" title="下载图片">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </button>
+              <button type="button" class="btn btn-tool" id="btnFit">适配视图</button>
+              <button type="button" class="btn btn-tool" id="btnReset">重置</button>
+            </div>
+            <span class="zoom-readout" id="zoomReadout">100%</span>
+          </div>
+
+          <div class="viewport" id="viewport">
+            <div class="world" id="world">
+              <svg class="edges-svg" id="edgesSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+              <div id="nodesLayer"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </aside>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true"></div>
+  <div class="modal" id="settingsModal" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
+    <div class="modal-header">
+      <div>
+        <p class="modal-kicker">Connection</p>
+        <h2 id="modalTitle">API 连接设置</h2>
+      </div>
+    </div>
+
+    <p class="sub">密钥仅保存在本地 <code class="inline-code">localStorage</code> 中，前端通过同源接口 <code class="inline-code">/api/generate</code> 发起请求。</p>
+    <div class="warn-box">生产环境请使用 HTTPS，并确保代理端只接收可信来源的请求。</div>
+
+    <div class="form-group">
+      <div class="field">
+        <label for="selProvider">服务提供方</label>
+        <div class="select-wrapper">
+          <select id="selProvider">
+            <option value="openai">OpenAI / Compatible</option>
+            <option value="anthropic">Anthropic Claude</option>
+            <option value="zhipu">智谱 AI (BigModel)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="inpBaseUrl">Base URL（可选）</label>
+        <input type="text" id="inpBaseUrl" placeholder="例如 https://api.moonshot.cn/v1" class="glass-input" />
+      </div>
+
+      <div class="field">
+        <label for="inpKey">API Key <small style="color:var(--text-muted);font-weight:normal;">（留空使用服务端配置）</small></label>
+        <input type="password" id="inpKey" autocomplete="off" placeholder="sk-..." class="glass-input" />
+      </div>
+
+      <div class="field" id="modelFieldOpenai">
+        <label for="inpModelOai">OpenAI 模型</label>
+        <input type="text" id="inpModelOai" placeholder="默认: gpt-4o-mini" class="glass-input" />
+      </div>
+
+      <div class="field" id="modelFieldAnthropic" style="display: none">
+        <label for="inpModelAnt">Anthropic 模型</label>
+        <input type="text" id="inpModelAnt" placeholder="默认: claude-3-5-haiku-20241022" class="glass-input" />
+      </div>
+
+      <div class="field" id="modelFieldZhipu" style="display: none">
+        <label for="inpModelZhipu">智谱 AI 模型</label>
+        <input type="text" id="inpModelZhipu" placeholder="默认: glm-4.7-flash" class="glass-input" />
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-solid" id="btnSaveSettings">保存设置</button>
+      <button type="button" class="btn btn-ghost" id="btnCloseSettings">关闭</button>
+    </div>
+  </div>
+
+  <div class="drawer-backdrop" id="backdrop"></div>
+  <aside class="drawer" id="drawer">
+    <button type="button" class="close-btn" id="closeDrawer" aria-label="关闭">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <path d="M6 6l12 12M18 6L6 18"></path>
+      </svg>
+    </button>
+
+    <header class="drawer-header">
+      <div class="drawer-avatar" aria-hidden="true"></div>
+      <div class="drawer-info">
+        <h3 id="dName">-</h3>
+        <div class="meta" id="dMeta">-</div>
+      </div>
+    </header>
+
+    <div class="stance-box">
+      <div class="stance-label">核心立场</div>
+      <div class="stance" id="dStance"></div>
+    </div>
+
+    <div class="vp-title">时间线观点记录</div>
+    <div class="vp-list scroll-area" id="dList"></div>
+  </aside>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <!-- 重命名模态框 -->
+  <div class="modal small-modal" id="renameModal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <div>
+        <p class="modal-kicker">Edit</p>
+        <h2 id="renameModalTitle">重命名</h2>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="renameInput">新名称</label>
+      <input type="text" id="renameInput" class="glass-input" placeholder="输入新的议题名称" />
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-solid" id="btnSaveRename">保存</button>
+      <button type="button" class="btn btn-ghost" id="btnCancelRename">取消</button>
+    </div>
+  </div>
+
+  <!-- 分类模态框 -->
+  <div class="modal small-modal" id="categoryModal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <div>
+        <p class="modal-kicker">Organize</p>
+        <h2>添加分类</h2>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="categoryInput">分类标签</label>
+      <input type="text" id="categoryInput" class="glass-input" placeholder="例如：哲学、科技、政治..." />
+    </div>
+    <div class="category-tags" id="categoryTags">
+      <span class="category-tag" data-category="哲学">哲学</span>
+      <span class="category-tag" data-category="科技">科技</span>
+      <span class="category-tag" data-category="政治">政治</span>
+      <span class="category-tag" data-category="经济">经济</span>
+      <span class="category-tag" data-category="环境">环境</span>
+      <span class="category-tag" data-category="伦理">伦理</span>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-solid" id="btnSaveCategory">保存</button>
+      <button type="button" class="btn btn-ghost" id="btnCancelCategory">取消</button>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

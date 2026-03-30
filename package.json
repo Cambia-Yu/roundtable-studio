@@ -1,0 +1,10 @@
+{
+  "name": "ljg-roundtable-web",
+  "private": true,
+  "version": "0.1.0",
+  "description": "圆桌可视化 + Vercel API 代理（BYOK OpenAI / Anthropic）",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "node scripts/dev-local.cjs"
+  }
+}
