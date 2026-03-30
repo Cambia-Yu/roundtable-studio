@@ -140,7 +140,7 @@
   var state = {
     script: [],
     participants: [],
-    settings: { provider: "openai", key: "", modelOai: "", modelAnt: "", modelZhipu: "", baseUrl: "" },
+    settings: { provider: "zhipu", key: "", modelOai: "", modelAnt: "", modelZhipu: "", baseUrl: "" },
     history: [],
     currentIndex: 0,
     isPlaying: false,

@@ -78,23 +78,6 @@ async function openaiComplete(apiKey, model, topic, baseUrl) {
   } else {
     bodyPayload.response_format = { type: "json_object" };
   }
-  // 智谱 AI 兼容模式：如果模型名以 glm- 开头，自动添加 thinking 参数
-  const isZhipuModel = model?.startsWith("glm-");
-  const bodyPayload = {
-    model: model || "gpt-4o-mini",
-    temperature: 0.75,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: "议题：" + topic },
-    ],
-  };
-  // 智谱 AI 需要 thinking 参数来获取结构化输出
-  if (isZhipuModel) {
-    bodyPayload.thinking = { type: "enabled" };
-    bodyPayload.max_tokens = 65536;
-  } else {
-    bodyPayload.response_format = { type: "json_object" };
-  }
 
   const r = await fetch(endpoint, {
     method: "POST",
@@ -201,7 +184,7 @@ module.exports = async function handler(req, res) {
     apiKey = (req.headers["x-user-api-key"] || "").trim();
     if (!apiKey) {
       return res.status(401).json({
-        error: "未配置 API Key。请联系管理员在 Vercel 环境变量中设置。"
+        error: "未配置 API Key。请联系管理员在环境变量中设置。"
       });
     }
   }
