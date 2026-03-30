@@ -190,24 +190,46 @@ export async function handler(event, context) {
 
     // 优先使用服务端环境变量，其次使用用户提供的 Key
     let apiKey = '';
+    let source = '';
     if (provider === 'anthropic') {
       apiKey = (process.env.ANTHROPIC_API_KEY || '').trim();
+      source = '环境变量 ANTHROPIC_API_KEY';
     } else if (provider === 'openai') {
       apiKey = (process.env.OPENAI_API_KEY || '').trim();
+      source = '环境变量 OPENAI_API_KEY';
     } else if (provider === 'zhipu') {
       apiKey = (process.env.ZHIPU_API_KEY || '').trim();
+      source = '环境变量 ZHIPU_API_KEY';
     }
 
+    // 调试日志
+    console.log('=== Request Debug ===');
+    console.log('Provider:', provider);
+    console.log('Model:', model);
+    console.log('API Key from env:', apiKey ? '存在 (长度:' + apiKey.length + ')' : '不存在');
+    console.log('All headers:', JSON.stringify(Object.keys(event.headers)));
+    console.log('===================');
+
     // 如果服务端没有配置，则使用用户提供的 Key（从 header 读取）
+    // Netlify headers 可能是小写或原始大小写
     if (!apiKey) {
-      apiKey = (event.headers['x-user-api-key'] || '').trim();
-      if (!apiKey) {
-        return {
-          statusCode: 401,
-          headers,
-          body: JSON.stringify({
-            error: '未配置 API Key。请联系管理员在环境变量中设置。'
-          }),
+      const userKey = event.headers['x-user-api-key'] ||
+                      event.headers['X-User-Api-Key'] ||
+                      event.headers['X-User-API-Key'] ||
+                      '';
+      apiKey = userKey.trim();
+      source = '用户输入';
+      console.log('API Key from header:', apiKey ? '存在' : '不存在');
+    }
+
+    if (!apiKey) {
+      console.error('API Key 缺失 - provider:', provider);
+      return {
+        statusCode: 401,
+        headers,
+        body: JSON.stringify({
+            error: '未配置 API Key（provider: ' + provider + '）。请在环境变量中设置 ZHIPU_API_KEY，或在前端设置中输入 API Key。'
+        }),
         };
       }
     }
