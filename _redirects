@@ -1,0 +1,5 @@
+# API 路由重定向到 Netlify Functions
+/api/* /.netlify/functions/:splat 200
+
+# SPA 路由回退到 index.html
+/* /index.html 200
